@@ -3,10 +3,10 @@ import App from "./app";
 import { ROUTES } from "@/shared/model/routes";
 
 const PAGES = {
-  BOARDS: "@/features/boards-list/board-list.page",
-  BOARD: "@/features/board/board.page",
-  LOGIN: "@/features/auth/login.page",
-  REGISTER: "@/features/auth/register.page",
+  LOGIN: () => import("@/features/auth/login.page"),
+  REGISTER: () => import("@/features/auth/register.page"),
+  BOARDS: () => import("@/features/boards-list/board-list.page"),
+  BOARD: () => import("@/features/board/board.page"),
 } as const;
 
 export const router = createBrowserRouter([
@@ -15,19 +15,19 @@ export const router = createBrowserRouter([
     children: [
       {
         path: ROUTES.BOARDS,
-        lazy: () => getLazyComponent(PAGES.BOARDS),
+        lazy: () => getLazyComponent("BOARDS"),
       },
       {
         path: ROUTES.BOARD,
-        lazy: () => getLazyComponent(PAGES.BOARD),
+        lazy: () => getLazyComponent("BOARD"),
       },
       {
         path: ROUTES.LOGIN,
-        lazy: () => getLazyComponent(PAGES.LOGIN),
+        lazy: () => getLazyComponent("LOGIN"),
       },
       {
         path: ROUTES.REGISTER,
-        lazy: () => getLazyComponent(PAGES.REGISTER),
+        lazy: () => getLazyComponent("REGISTER"),
       },
       {
         path: ROUTES.HOME,
@@ -37,9 +37,7 @@ export const router = createBrowserRouter([
   },
 ]);
 
-async function getLazyComponent<T extends keyof typeof PAGES>(
-  path: (typeof PAGES)[T],
-) {
-  const module = (await import(path)) as { default: React.ComponentType };
+async function getLazyComponent<T extends keyof typeof PAGES>(path: T) {
+  const module = (await PAGES[path]()) as { default: React.ComponentType };
   return { Component: module.default };
 }
