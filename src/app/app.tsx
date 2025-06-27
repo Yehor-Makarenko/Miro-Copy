@@ -1,7 +1,11 @@
+import AppHeader from "@/features/header";
+import { Outlet } from "react-router";
+
 export default function App() {
   return (
     <>
-      <div>App</div>
+      <AppHeader />
+      <Outlet />
     </>
   );
 }
