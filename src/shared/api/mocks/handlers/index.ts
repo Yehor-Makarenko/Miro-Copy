@@ -29,7 +29,7 @@ export const handlers = [
     };
 
     boards.push(board);
-    return HttpResponse.json(board);
+    return HttpResponse.json(board, { status: 201 });
   }),
   http.delete("/boards/{boardId}", (query) => {
     const { boardId } = query.params;
