@@ -1,6 +1,7 @@
 import { createBrowserRouter, redirect } from "react-router";
 import App from "./app";
 import { ROUTES } from "@/shared/model/routes";
+import { Providers } from "./providers";
 
 const PAGES = {
   LOGIN: () => import("@/features/auth/login.page"),
@@ -11,7 +12,11 @@ const PAGES = {
 
 export const router = createBrowserRouter([
   {
-    element: <App />,
+    element: (
+      <Providers>
+        <App />
+      </Providers>
+    ),
     children: [
       {
         path: ROUTES.BOARDS,
