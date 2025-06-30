@@ -5,7 +5,7 @@ import { http } from "../http";
 const mockUsers: ApiSchemas["User"][] = [
   {
     id: "User1",
-    email: "Z4C0a@example.com",
+    email: "admin@gmail.com",
   },
 ];
 
