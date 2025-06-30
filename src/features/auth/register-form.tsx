@@ -12,22 +12,28 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/shared/ui/kit/button";
 
-const loginSchema = z.object({
-  email: z
-    .string({
-      required_error: "Email is required",
-    })
-    .email("Invalid email address"),
-  password: z
-    .string({
-      required_error: "Password is required",
-    })
-    .min(6, "Password must be at least 6 characters"),
-});
+const registerSchema = z
+  .object({
+    email: z
+      .string({
+        required_error: "Email is required",
+      })
+      .email("Invalid email address"),
+    password: z
+      .string({
+        required_error: "Password is required",
+      })
+      .min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
-export default function LoginForm() {
+export default function RegisterForm() {
   const form = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(registerSchema),
   });
   const onSubmit = form.handleSubmit((data) => console.log(data));
 
@@ -60,7 +66,20 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Login</Button>
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit">Register</Button>
       </form>
     </Form>
   );
