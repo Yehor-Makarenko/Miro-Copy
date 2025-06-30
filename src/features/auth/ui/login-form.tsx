@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/shared/ui/kit/button";
+import { useLogin } from "../model/useLogin";
 
 const loginSchema = z.object({
   email: z
@@ -29,7 +30,10 @@ export default function LoginForm() {
   const form = useForm({
     resolver: zodResolver(loginSchema),
   });
-  const onSubmit = form.handleSubmit((data) => console.log(data));
+
+  const { login, isPending, errorMessage } = useLogin();
+
+  const onSubmit = form.handleSubmit(login);
 
   return (
     <Form {...form}>
@@ -60,7 +64,13 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Login</Button>
+
+        {errorMessage && (
+          <p className="text-destructive text-sm">{errorMessage}</p>
+        )}
+        <Button disabled={isPending} type="submit">
+          Login
+        </Button>
       </form>
     </Form>
   );
