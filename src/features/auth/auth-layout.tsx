@@ -1,15 +1,15 @@
 import { ROUTES } from "@/shared/model/routes";
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
 } from "@/shared/ui/kit/card";
 import { Link } from "react-router";
 
-export default function LoginPage() {
+export function AuthLayout() {
   return (
     <main className="grow flex flex-col pt-[200px] items-center">
       <Card className="w-full max-w-[400px]">
