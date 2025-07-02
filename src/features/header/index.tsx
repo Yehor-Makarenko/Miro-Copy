@@ -1,7 +1,5 @@
-import { ROUTES } from "@/shared/model/routes";
 import { useSession } from "@/shared/model/session";
 import { Button } from "@/shared/ui/kit/button";
-import { Link } from "react-router";
 
 export default function AppHeader() {
   const { session, logout } = useSession();
@@ -19,15 +17,13 @@ export default function AppHeader() {
               variant="outline"
               size="sm"
               onClick={() => logout()}
-              className="hover:bg-destructive/10"
+              className="hover:bg-destructive/70"
             >
-              Выйти
+              Logout
             </Button>
           </div>
         ) : (
-          <Button asChild variant="default" size="sm">
-            <Link to={ROUTES.LOGIN}>Войти</Link>
-          </Button>
+          <h1>Loading</h1>
         )}
       </div>
     </header>

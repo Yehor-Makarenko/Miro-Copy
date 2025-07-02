@@ -1,7 +1,9 @@
-import { createBrowserRouter, redirect } from "react-router";
+import { createBrowserRouter, Outlet, redirect } from "react-router";
 import App from "./app";
 import { ROUTES } from "@/shared/model/routes";
 import { Providers } from "./providers";
+import { ProtectedRoute } from "./protected-route";
+import AppHeader from "@/features/header";
 
 const PAGES = {
   LOGIN: () => import("@/features/auth/login.page"),
@@ -19,12 +21,27 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        path: ROUTES.BOARDS,
-        lazy: () => getLazyComponent("BOARDS"),
-      },
-      {
-        path: ROUTES.BOARD,
-        lazy: () => getLazyComponent("BOARD"),
+        element: <ProtectedRoute />,
+        children: [
+          {
+            element: (
+              <>
+                <AppHeader />
+                <Outlet />
+              </>
+            ),
+            children: [
+              {
+                path: ROUTES.BOARDS,
+                lazy: () => getLazyComponent("BOARDS"),
+              },
+              {
+                path: ROUTES.BOARD,
+                lazy: () => getLazyComponent("BOARD"),
+              },
+            ],
+          },
+        ],
       },
       {
         path: ROUTES.LOGIN,
