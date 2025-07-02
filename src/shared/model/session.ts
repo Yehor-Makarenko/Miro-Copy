@@ -1,0 +1,28 @@
+import { useState } from "react";
+import { jwtDecode } from "jwt-decode";
+
+type Session = {
+  userId: string;
+  email: string;
+  exp: number;
+  iat: number;
+};
+
+const TOKEN_KEY = "token";
+export function useSession() {
+  const [token, setToken] = useState(() => localStorage.get(TOKEN_KEY));
+
+  const login = (token: string) => {
+    localStorage.set(TOKEN_KEY, token);
+    setToken(token);
+  };
+
+  const logout = () => {
+    localStorage.remove(TOKEN_KEY);
+    setToken(null);
+  };
+
+  const session = token ? jwtDecode<Session>(token) : null;
+
+  return { token, login, logout, session };
+}
