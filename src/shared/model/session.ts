@@ -19,7 +19,7 @@ export const useSession = createGStore(() => {
   };
 
   const logout = () => {
-    localStorage.remove(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     setToken(null);
   };
 
