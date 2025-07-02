@@ -14,7 +14,7 @@ export const publicFetchClient = createFetchClient<ApiPaths>({
   baseUrl: CONFIG.API_BASE_URL,
 });
 
-export const publicRqClient = createClient(fetchClient);
+export const publicRqClient = createClient(publicFetchClient);
 
 fetchClient.use({
   async onRequest({ request }) {

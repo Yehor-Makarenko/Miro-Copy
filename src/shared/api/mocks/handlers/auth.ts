@@ -75,7 +75,7 @@ export const authHandlers = [
       email: data.email,
     };
 
-    const { accessToken: token } = await generateTokens({
+    const { accessToken, refreshToken } = await generateTokens({
       userId: user.id,
       email: user.email,
     });
@@ -83,13 +83,13 @@ export const authHandlers = [
     userPasswords.set(data.email, data.password);
     return HttpResponse.json(
       {
-        accessToken: token,
+        accessToken,
         user,
       },
       {
         status: 201,
         headers: {
-          "Set-Cookie": createRefreshTokenCookie(token),
+          "Set-Cookie": createRefreshTokenCookie(refreshToken),
         },
       },
     );
