@@ -37,10 +37,11 @@ export const useSession = createGStore(() => {
       return token;
     }
 
+    if (refreshTokenPromise) {
+      return await refreshTokenPromise;
+    }
+
     try {
-      if (refreshTokenPromise) {
-        return await refreshTokenPromise;
-      }
       const getNewToken = async () => {
         const response = await publicFetchClient.POST("/auth/refresh");
         const newToken = response.data?.accessToken ?? null;
