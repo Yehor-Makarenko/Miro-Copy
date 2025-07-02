@@ -11,7 +11,7 @@ type Session = {
 
 const TOKEN_KEY = "token";
 export const useSession = createGStore(() => {
-  const [token, setToken] = useState(() => localStorage.get(TOKEN_KEY));
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
 
   const login = (token: string) => {
     localStorage.set(TOKEN_KEY, token);
