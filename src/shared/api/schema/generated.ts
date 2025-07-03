@@ -136,9 +136,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @default 1 */
                     page?: number;
-                    /** @default 10 */
                     limit?: number;
                     sort?: "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
                     isFavorite?: boolean;
