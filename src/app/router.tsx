@@ -2,7 +2,7 @@ import { createBrowserRouter, Outlet, redirect } from "react-router";
 import App from "./app";
 import { ROUTES } from "@/shared/model/routes";
 import { Providers } from "./providers";
-import { ProtectedRoute } from "./protected-route";
+import { protectedLoader, ProtectedRoute } from "./protected-route";
 import AppHeader from "@/features/header";
 
 const PAGES = {
@@ -22,6 +22,7 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <ProtectedRoute />,
+        loader: protectedLoader,
         children: [
           {
             element: (

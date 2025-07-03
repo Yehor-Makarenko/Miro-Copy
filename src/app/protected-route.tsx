@@ -11,3 +11,14 @@ export function ProtectedRoute() {
 
   return <Outlet />;
 }
+
+// eslint-disable-next-line react-refresh/only-export-components
+export async function protectedLoader() {
+  const token = await useSession.getState().refreshToken();
+
+  if (!token) {
+    return <Navigate to={ROUTES.LOGIN} />;
+  }
+
+  return null;
+}
