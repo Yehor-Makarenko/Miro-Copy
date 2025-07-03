@@ -32,5 +32,13 @@ paths:
       $ref: "./endpoints/boards.yaml#/createBoard"
 
   /boards/{boardId}:
+    get:
+      $ref: "./endpoints/boards.yaml#/getBoardById"
     delete:
       $ref: "./endpoints/boards.yaml#/deleteBoard"
+  /boards/{boardId}/favorite:
+    patch:
+      $ref: "./endpoints/boards.yaml#/updateBoardFavorite"
+  /boards/{boardId}/rename:
+    patch:
+      $ref: "./endpoints/boards.yaml#/renameBoard"
