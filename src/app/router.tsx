@@ -2,8 +2,9 @@ import { createBrowserRouter, Outlet, redirect } from "react-router";
 import App from "./app";
 import { ROUTES } from "@/shared/model/routes";
 import { Providers } from "./providers";
-import { protectedLoader, ProtectedRoute } from "./protected-route";
+import { ProtectedRoute } from "./protected-route";
 import AppHeader from "@/features/header";
+import { protectedLoader } from "./protected-route-loader";
 
 const PAGES = {
   LOGIN: () => import("@/features/auth/login.page"),
