@@ -38,7 +38,7 @@ export const useSession = createGStore(() => {
     }
 
     if (refreshTokenPromise) {
-      return await refreshTokenPromise;
+      return refreshTokenPromise;
     }
 
     try {

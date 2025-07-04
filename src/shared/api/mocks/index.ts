@@ -1,8 +1,8 @@
 let mocksEnabledPromise: Promise<void> | null = null;
-let mocksEnabled = false;
+// let mocksEnabled = false;
 
 export async function enableMocking() {
-  if (import.meta.env.PROD || mocksEnabled) {
+  if (import.meta.env.PROD) {
     return;
   }
 
@@ -13,7 +13,7 @@ export async function enableMocking() {
   mocksEnabledPromise = (async () => {
     const { worker } = await import("@/shared/api/mocks/browser");
     await worker.start();
-    mocksEnabled = true;
+    mocksEnabledPromise = null;
   })();
 
   return mocksEnabledPromise;
