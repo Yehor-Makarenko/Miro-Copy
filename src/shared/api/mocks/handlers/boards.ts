@@ -5,32 +5,49 @@ import { verifyTokenOrThrow } from "../session";
 
 //Later create functions for http requests. E.g. notFoundResponse(message: string) => HttpResponse
 
-const boards: ApiSchemas["Board"][] = [
-  {
-    id: "Board1",
-    name: "Marketing",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    lastOpenedAt: new Date().toISOString(),
-    isFavorite: false,
-  },
-  {
-    id: "Board2",
-    name: "Sales",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    lastOpenedAt: new Date().toISOString(),
-    isFavorite: false,
-  },
-  {
-    id: "Board3",
-    name: "Support",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    lastOpenedAt: new Date().toISOString(),
-    isFavorite: false,
-  },
-];
+function generateBoards(count: number): ApiSchemas["Board"][] {
+  const boards: ApiSchemas["Board"][] = [];
+  const now = Date.now();
+  const halfYearMs = 180 * 24 * 60 * 60 * 1000; // 180 days in ms
+
+  for (let i = 0; i < count; i++) {
+    const randomOffsets = [
+      Math.floor(Math.random() * halfYearMs),
+      Math.floor(Math.random() * halfYearMs),
+      Math.floor(Math.random() * halfYearMs),
+    ];
+
+    randomOffsets.sort((a, b) => a - b);
+
+    const createdAt = new Date(now - randomOffsets[2]);
+    const updatedAt = new Date(now - randomOffsets[1]);
+    const lastOpenedAt = new Date(now - randomOffsets[0]);
+
+    const isFavorite = i % 3 === 0;
+
+    boards.push({
+      id: `Board${i + 1}`,
+      name: `Project ${i + 1} - ${getRandomProjectName()}`,
+      createdAt: createdAt.toISOString(),
+      updatedAt: updatedAt.toISOString(),
+      lastOpenedAt: lastOpenedAt.toISOString(),
+      isFavorite,
+    });
+  }
+
+  return boards;
+}
+
+// helper function to generate random project names
+function getRandomProjectName(): string {
+  const adjectives = ["Marketing", "Sales", "Support", "Development", "Design"];
+  const nouns = ["Campaign", "Strategy", "Team", "Project", "Initiative"];
+
+  return `${adjectives[Math.floor(Math.random() * adjectives.length)]} ${nouns[Math.floor(Math.random() * nouns.length)]}`;
+}
+
+const boards: ApiSchemas["Board"][] = generateBoards(100);
+
 export const boardsHandlers = [
   http.get("/boards", async (query) => {
     await verifyTokenOrThrow(query.request);
@@ -150,7 +167,6 @@ export const boardsHandlers = [
     const { boardId } = query.params;
     const { isFavorite } = await query.request.json();
     const board = boards.find((b) => b.id === boardId);
-
     if (!board) {
       return HttpResponse.json(
         {
