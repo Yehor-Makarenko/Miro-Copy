@@ -36,13 +36,13 @@ export const eslintBoundariesConfig = {
             from: "shared",
             disallow: ["app", "features"],
             message:
-              "Модуль нижележащего слоя (${file.type}) не может импортировать модуль вышележащего слоя (${dependency.type})",
+              "Module '${file.type}' is not allowed to import '${dependency.type}'",
           },
           {
             from: "features",
             disallow: ["app"],
             message:
-              "Модуль нижележащего слоя (${file.type}) не может импортировать модуль вышележащего слоя (${dependency.type})",
+              "Module '${file.type}' is not allowed to import '${dependency.type}'",
           },
         ],
       },
@@ -52,7 +52,7 @@ export const eslintBoundariesConfig = {
       {
         default: "disallow",
         message:
-          "Модуль (${file.type}) должен импортироваться через public API. Прямой импорт из ${dependency.source} запрещен",
+          "Module '${file.type}' is not allowed to import '${dependency.type}'",
 
         rules: [
           {
