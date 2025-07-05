@@ -2,7 +2,16 @@ import { rqClient } from "@/shared/api/instance";
 import { ROUTES, typedHref } from "@/shared/model/routes";
 import { Button } from "@/shared/ui/kit/button";
 import { Card, CardFooter, CardHeader } from "@/shared/ui/kit/card";
+import { Input } from "@/shared/ui/kit/input";
+import {
+  Select,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/shared/ui/kit/select";
 import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
+import React from "react";
 import { useCallback, useState, type RefCallback } from "react";
 import { Link, useSearchParams } from "react-router";
 
@@ -18,6 +27,7 @@ export default function BoardList() {
   const [isFavorite, setIsFavorite] = useState<boolean | undefined>(
     searchParams.get("isFavorite") === "true" ? true : undefined,
   );
+
   const { data, fetchNextPage, hasNextPage, isFetching } =
     rqClient.useInfiniteQuery(
       "get",
@@ -136,93 +146,104 @@ export default function BoardList() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1>Boards List</h1>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-2">
-          <input
-            type="text"
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Boards List</h1>
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-3">
+          <Input
             placeholder="Search boards..."
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(e) => handleSearchChange(e.target.value)}
             value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full"
           />
-          <select
-            className="w-full sm:w-48 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(e) => handleIsFavoriteChange(e.target.value)}
-            value={isFavorite ? "favorite" : ""}
+          <Select
+            value={isFavorite ? "favorite" : "all"}
+            onValueChange={(value) => handleIsFavoriteChange(value)}
           >
-            <option value="">All boards</option>
-            <option value="favorite">Favorite only</option>
-          </select>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Boards" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All boards</SelectItem>
+              <SelectItem value="favorite">Favorite only</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            className="w-full sm:w-48 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(e) => handleSortChange(e.target.value as SORT_VALUES)}
+
+        <div className="flex items-center gap-3">
+          <Select
             value={sort}
+            onValueChange={(value) => handleSortChange(value as SORT_VALUES)}
           >
-            <option value="createdAt">Created at</option>
-            <option value="updatedAt">Updated at</option>
-            <option value="lastOpenedAt">Last opened at</option>
-            <option value="name">Name</option>
-          </select>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="createdAt">Created at</SelectItem>
+              <SelectItem value="updatedAt">Updated at</SelectItem>
+              <SelectItem value="lastOpenedAt">Last opened at</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+            </SelectContent>
+          </Select>
           <Button onClick={() => createBoardMutation.mutate({})}>
             Create board
           </Button>
         </div>
       </div>
-      <div className="flex flex-col gap-4">
-        {data?.pages.map((page, i) => {
-          return (
-            <div key={i} className="grid grid-cols-3 gap-4">
-              {page.list.map((board) => (
-                <Card key={board.id}>
-                  <CardHeader>
-                    <div className="flex justify-between">
-                      <Button asChild variant="link">
-                        <Link
-                          to={typedHref(ROUTES.BOARD, { boardId: board.id })}
-                        >
-                          Board {board.name}
-                        </Link>
-                      </Button>
-                      <Button
-                        variant={board.isFavorite ? "default" : "secondary"}
-                        onClick={() =>
-                          toggleFavoriteMutation.mutate({
-                            params: { path: { boardId: board.id } },
-                            body: { isFavorite: !board.isFavorite },
-                          })
-                        }
-                      >
-                        {board.isFavorite ? "Favorite" : "Not favorite"}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardFooter>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {data?.pages.map((page, i) => (
+          <React.Fragment key={i}>
+            {page.list.map((board) => (
+              <Card key={board.id} className="rounded-2xl shadow-md">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
                     <Button
-                      variant="destructive"
-                      disabled={deleteBoardMutation.isPending}
+                      asChild
+                      variant="link"
+                      className="text-lg font-medium"
+                    >
+                      <Link to={typedHref(ROUTES.BOARD, { boardId: board.id })}>
+                        {board.name}
+                      </Link>
+                    </Button>
+                    <Button
+                      variant={board.isFavorite ? "default" : "secondary"}
                       onClick={() =>
-                        deleteBoardMutation.mutate({
-                          params: {
-                            path: {
-                              boardId: board.id,
-                            },
-                          },
+                        toggleFavoriteMutation.mutate({
+                          params: { path: { boardId: board.id } },
+                          body: { isFavorite: !board.isFavorite },
                         })
                       }
                     >
-                      Delete
+                      {board.isFavorite ? "★" : "☆"}
                     </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          );
-        })}
+                  </div>
+                </CardHeader>
+                <CardFooter className="justify-end">
+                  <Button
+                    variant="destructive"
+                    disabled={deleteBoardMutation.isPending}
+                    onClick={() =>
+                      deleteBoardMutation.mutate({
+                        params: {
+                          path: {
+                            boardId: board.id,
+                          },
+                        },
+                      })
+                    }
+                  >
+                    Delete
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </React.Fragment>
+        ))}
       </div>
+
       <div ref={cursorRef} className="h-10"></div>
     </div>
   );
