@@ -77,20 +77,20 @@ export const boardsHandlers = [
         case "createdAt":
           filteredBoards.sort(
             (a, b) =>
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           );
           break;
         case "updatedAt":
           filteredBoards.sort(
             (a, b) =>
-              new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
           );
           break;
         case "lastOpenedAt":
           filteredBoards.sort(
             (a, b) =>
-              new Date(a.lastOpenedAt).getTime() -
-              new Date(b.lastOpenedAt).getTime(),
+              new Date(b.lastOpenedAt).getTime() -
+              new Date(a.lastOpenedAt).getTime(),
           );
           break;
         case "name":
