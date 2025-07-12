@@ -10,10 +10,12 @@ import {
   SelectContent,
   SelectItem,
 } from "@/shared/ui/kit/select";
-import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import React from "react";
-import { useCallback, useState, type RefCallback } from "react";
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
+import { CardDescription } from "../../shared/ui/kit/card";
+import { useBoardsList } from "./use-boards-list";
 
 type SORT_VALUES = "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
 
@@ -28,59 +30,13 @@ export default function BoardList() {
     searchParams.get("isFavorite") === "true" ? true : undefined,
   );
 
-  const { data, fetchNextPage, hasNextPage, isFetching } =
-    rqClient.useInfiniteQuery(
-      "get",
-      "/boards",
-      {
-        params: {
-          query: {
-            limit: 12,
-            sort,
-            search,
-            isFavorite,
-          },
-        },
-      },
-      {
-        initialPageParam: 1,
-        pageParamName: "page",
-        getNextPageParam: (
-          lastPage: { totalPages: number },
-          _: unknown,
-          lastPageParam: number,
-        ) => {
-          return lastPageParam < lastPage.totalPages
-            ? lastPageParam + 1
-            : undefined;
-        },
-        placeholderData: keepPreviousData,
-      },
-    );
+  const boardsQuery = useBoardsList({
+    limit: 12,
+    sort,
+    search,
+    isFavorite,
+  });
 
-  const cursorRef: RefCallback<HTMLDivElement> = useCallback(
-    (el) => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasNextPage && !isFetching) {
-            fetchNextPage();
-          }
-        },
-        {
-          threshold: 0.5,
-        },
-      );
-
-      if (el) {
-        observer.observe(el);
-
-        return () => {
-          observer.disconnect();
-        };
-      }
-    },
-    [fetchNextPage, hasNextPage, isFetching],
-  );
   const createBoardMutation = rqClient.useMutation("post", "/boards", {
     onSettled: async () =>
       await queryClient.invalidateQueries(
@@ -107,9 +63,7 @@ export default function BoardList() {
           path: { boardId },
         },
       }) => {
-        const board = data?.pages
-          .find((page) => page.list.find((board) => board.id === boardId))
-          ?.list.find((board) => board.id === boardId);
+        const board = boardsQuery.boards.find((b) => b.id === boardId);
         if (board) {
           board.isFavorite = !board.isFavorite;
         }
@@ -191,14 +145,15 @@ export default function BoardList() {
           </Button>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data?.pages.map((page, i) => (
-          <React.Fragment key={i}>
-            {page.list.map((board) => (
+      {boardsQuery.isPending ? (
+        <div className="text-center text-muted-foreground">Loading...</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {boardsQuery.boards.map((board) => (
               <Card key={board.id} className="rounded-2xl shadow-md">
                 <CardHeader>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between">
                     <Button
                       asChild
                       variant="link"
@@ -221,6 +176,18 @@ export default function BoardList() {
                     </Button>
                   </div>
                 </CardHeader>
+                <CardDescription>
+                  <div className="flex flex-col gap-2 ml-10">
+                    <p>
+                      Created at{" "}
+                      {new Date(board.createdAt).toLocaleDateString()}
+                    </p>
+                    <p>
+                      Last opened at{" "}
+                      {new Date(board.lastOpenedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </CardDescription>
                 <CardFooter className="justify-end">
                   <Button
                     variant="destructive"
@@ -240,11 +207,24 @@ export default function BoardList() {
                 </CardFooter>
               </Card>
             ))}
-          </React.Fragment>
-        ))}
-      </div>
+          </div>
 
-      <div ref={cursorRef} className="h-10"></div>
+          {boardsQuery.boards.length === 0 && !boardsQuery.isPending && (
+            <div className="text-center text-muted-foreground">
+              No boards found
+            </div>
+          )}
+
+          {boardsQuery.hasNextPage && (
+            <div
+              ref={boardsQuery.cursorRef}
+              className="text-center text-muted-foreground py-8"
+            >
+              {boardsQuery.isFetchingNextPage && "Loading more..."}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
