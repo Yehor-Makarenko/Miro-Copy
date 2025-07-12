@@ -11,29 +11,25 @@ import {
   SelectItem,
 } from "@/shared/ui/kit/select";
 import { useQueryClient } from "@tanstack/react-query";
-import React from "react";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { CardDescription } from "../../shared/ui/kit/card";
 import { useBoardsList } from "./use-boards-list";
-
-type SORT_VALUES = "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
+import { useBoardsFilters, type BoardsSortOptions } from "./use-boards-filters";
+import { useDebouncedValue } from "@/shared/lib/react";
 
 export default function BoardList() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [sort, setSort] = useState<SORT_VALUES>(
-    (searchParams.get("sort") as SORT_VALUES) || "lastOpenedAt",
-  );
+  const boardsFilters = useBoardsFilters();
   const [isFavorite, setIsFavorite] = useState<boolean | undefined>(
     searchParams.get("isFavorite") === "true" ? true : undefined,
   );
 
   const boardsQuery = useBoardsList({
     limit: 12,
-    sort,
-    search,
+    sort: boardsFilters.sort,
+    search: useDebouncedValue(boardsFilters.search, 500),
     isFavorite,
   });
 
@@ -76,15 +72,11 @@ export default function BoardList() {
   );
 
   const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    searchParams.set("search", newSearch);
-    setSearchParams(searchParams);
+    boardsFilters.setSearchWithSearchParams(newSearch);
   };
 
-  const handleSortChange = (newSort: SORT_VALUES) => {
-    setSort(newSort);
-    searchParams.set("sort", newSort);
-    setSearchParams(searchParams);
+  const handleSortChange = (newSort: BoardsSortOptions) => {
+    boardsFilters.setSortWithSearchParams(newSort);
   };
 
   const handleIsFavoriteChange = (newIsFavorite: string) => {
@@ -107,7 +99,7 @@ export default function BoardList() {
         <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-3">
           <Input
             placeholder="Search boards..."
-            value={search}
+            value={boardsFilters.search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full"
           />
@@ -127,8 +119,10 @@ export default function BoardList() {
 
         <div className="flex items-center gap-3">
           <Select
-            value={sort}
-            onValueChange={(value) => handleSortChange(value as SORT_VALUES)}
+            value={boardsFilters.sort}
+            onValueChange={(value) =>
+              handleSortChange(value as BoardsSortOptions)
+            }
           >
             <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Sort by" />
