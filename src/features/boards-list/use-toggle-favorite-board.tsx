@@ -1,76 +1,60 @@
 import { rqClient } from "@/shared/api/instance";
-import type { ApiSchemas } from "@/shared/api/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-
-type BoardsData = {
-  pages: {
-    list: ApiSchemas["Board"][];
-  }[];
-};
-
-let lastToggledBoardId: string | null = null;
 
 export default function useToggleFavoriteBoard() {
   const queryClient = useQueryClient();
 
-  const [toggledBoards, setToggledBoards] = useState<string[]>([]);
+  const [toggledBoards, setToggledBoards] = useState<Record<string, boolean>>(
+    {},
+  );
 
-  const toggleBoardFavorite = (boardId: string) => {
-    queryClient.setQueriesData(
-      rqClient.queryOptions("get", "/boards"),
-      (oldData: BoardsData): BoardsData => {
-        if (!oldData) {
-          return oldData;
-        }
+  // const toggleBoardFavorite = (boardId: string) => {
+  //   queryClient.setQueriesData(
+  //     rqClient.queryOptions("get", "/boards"),
+  //     (
+  //       oldData: InfiniteData<ApiSchemas["BoardsList"]>,
+  //     ): InfiniteData<ApiSchemas["BoardsList"]> => {
+  //       if (!oldData) {
+  //         return oldData;
+  //       }
 
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page) => ({
-            ...page,
-            list: page.list.map((board) => {
-              return board.id === boardId
-                ? { ...board, isFavorite: !board.isFavorite }
-                : board;
-            }),
-          })),
-        };
-      },
-    );
-  };
+  //       return {
+  //         ...oldData,
+  //         pages: oldData.pages.map((page) => ({
+  //           ...page,
+  //           list: page.list.map((board) => {
+  //             return board.id === boardId
+  //               ? { ...board, isFavorite: !board.isFavorite }
+  //               : board;
+  //           }),
+  //         })),
+  //       };
+  //     },
+  //   );
+  // };
 
   const toggleFavoriteMutation = rqClient.useMutation(
     "patch",
     "/boards/{boardId}/favorite",
     {
-      onMutate: ({
-        params: {
-          path: { boardId },
-        },
-      }) => {
-        lastToggledBoardId = boardId;
-        setToggledBoards((toggledBoards) => [...toggledBoards, boardId]);
+      onMutate: ({ params, body }) => {
         queryClient.cancelQueries(rqClient.queryOptions("get", "/boards"));
-        toggleBoardFavorite(boardId);
+
+        setToggledBoards((toggledBoards) => ({
+          ...toggledBoards,
+          [params.path.boardId]: body.isFavorite,
+        }));
       },
-      onSettled: async (
-        _,
-        __,
-        {
-          params: {
-            path: { boardId },
-          },
-        },
-      ) => {
-        setToggledBoards((toggledBoards) =>
-          toggledBoards.filter((id) => id !== boardId),
-        );
-        if (lastToggledBoardId !== boardId) {
-          return;
-        }
-        return await queryClient.invalidateQueries(
+      onSettled: async (_, __, { params }) => {
+        await queryClient.invalidateQueries(
           rqClient.queryOptions("get", "/boards"),
         );
+        setToggledBoards((toggledBoards) => {
+          const newToggledBoards = { ...toggledBoards };
+          delete newToggledBoards[params.path.boardId];
+          return newToggledBoards;
+        });
       },
     },
   );
@@ -84,6 +68,8 @@ export default function useToggleFavoriteBoard() {
         },
       }),
     getIsPending: (boardId: string) =>
-      toggleFavoriteMutation.isPending && toggledBoards.includes(boardId),
+      toggleFavoriteMutation.isPending && boardId in toggledBoards,
+    getOptimisticFavorite: (board: { id: string; isFavorite: boolean }) =>
+      toggledBoards[board.id] ?? board.isFavorite,
   };
 }
